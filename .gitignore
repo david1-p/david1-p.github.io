@@ -30,3 +30,6 @@ assets/js/dist
 *~
 .DS_Store
 Thumbs.db
+
+# Presentation sources (originals kept locally, PDFs published instead)
+_ppt/
