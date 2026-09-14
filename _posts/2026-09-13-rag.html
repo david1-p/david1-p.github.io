@@ -99,7 +99,7 @@ texts = text_splitter.split_text(document)
 </code></pre>
 <p>시맨틱 검색 튜토리얼에서는 <code>chunk_size=1000, chunk_overlap=200, add_start_index=True</code> 설정을 사용한다. <a class="fn" href="#src-4">[4]</a> Deep Agents RAG 가이드도 <code>RecursiveCharacterTextSplitter</code>를 "일반 텍스트에 권장되는 TextSplitter"로 소개하며 <code>chunk_size=1000, chunk_overlap=200</code>을 쓴다. <a class="fn" href="#src-2">[2]</a></p>
 <blockquote>
-<p><strong>단위 주의</strong>: <code>RecursiveCharacterTextSplitter</code>의 <code>chunk_size</code>는 기본적으로 <strong>문자 수</strong> 기준이며, 구분자 목록 <code>["\n\n", "\n", " ", ""]</code>을 순서대로 시도해 문단 → 줄 → 단어를 최대한 유지한다(별도 문장 분석기가 아니다). <a class="fn" href="#src-60">[60]</a> 따라서 위의 1000자는 아래 Chroma 연구의 "200<strong>토큰</strong>"이나 OpenAI Retrieval의 "800<strong>토큰</strong>"(6.4절)과 직접 비교할 수 없다. 토큰 기준으로 맞추려면 <code>length_function</code>에 tokenizer를 넘기거나 <code>TokenTextSplitter</code>를 쓰고, 어떤 tokenizer인지 기록한다.</p>
+<p><strong>단위 주의</strong>: <code>RecursiveCharacterTextSplitter</code>의 <code>chunk_size</code>는 기본적으로 <strong>문자 수</strong> 기준이며, 구분자 목록 <code>["\n\n", "\n", " ", ""]</code>을 순서대로 시도해 문단 → 줄 → 단어를 최대한 유지한다(별도 문장 분석기가 아니다).  따라서 위의 1000자는 아래 Chroma 연구의 "200<strong>토큰</strong>"이나 OpenAI Retrieval의 "800<strong>토큰</strong>"(6.4절)과 직접 비교할 수 없다. 토큰 기준으로 맞추려면 <code>length_function</code>에 tokenizer를 넘기거나 <code>TokenTextSplitter</code>를 쓰고, 어떤 tokenizer인지 기록한다.</p>
 </blockquote>
 <p><strong>청크 크기는 어떻게 정하나?</strong> Chroma의 청킹 평가 연구(2024-07-03)는 <code>RecursiveCharacterTextSplitter</code>, <code>TokenTextSplitter</code>, <code>KamradtSemanticChunker</code>, <code>KamradtModifiedChunker</code>, 그리고 새로 제안한 <code>ClusterSemanticChunker</code>, <code>LLMSemanticChunker</code>를 토큰 단위 recall/precision/IoU로 비교했다. 결과적으로 "청킹 전략 선택이 검색 성능(정확도·효율)에 상당한 영향"을 주며, 200토큰·오버랩 없음 설정이 대체로 정밀도·효율이 높았고, 큰 청크는 recall은 오르지만 토큰 효율이 떨어졌다. ClusterSemanticChunker(200토큰)가 정밀도·효율 최고, LLMSemanticChunker가 recall 최고였다. <a class="fn" href="#src-46">[46]</a></p>
 <p><strong>청킹의 한계와 대안</strong>: 청크를 따로 임베딩하면 주변 문맥이 사라진다. 이를 해결하는 Late Chunking(3.8절)과 Contextual Retrieval(3.3절)을 참고. <a class="fn" href="#src-27">[27]</a><a class="fn" href="#src-22">[22]</a></p>
@@ -415,7 +415,7 @@ def retrieve_blog_posts(query: str) -&gt; str:
 <hr />
 <h2 id="5-rag">5. RAG 평가</h2>
 <h3 id="51">5.1 무엇을, 어떻게 평가하나</h3>
-<p>RAG는 <strong>검색(Retrieval)</strong> 과 <strong>생성(Generation)</strong> 두 단계로 이루어지므로 평가도 두 층으로 나눈다. Ragas 논문은 RAG 평가 차원을 "검색 시스템이 관련 있고 집중된 문맥 문단을 찾아내는 능력, LLM이 그 문단을 충실하게 활용하는 능력, 생성 자체의 품질"로 정리한다. <a class="fn" href="#src-33">[33]</a> TruLens는 같은 구도를 <strong>RAG Triad</strong>라 부른다: Context Relevance(검색 청크 ↔ 질문), Groundedness(응답 ↔ 검색 문맥), Answer Relevance(응답 ↔ 질문). TruLens는 세 평가를 통과하면 "지식 베이스의 한계 안에서 환각이 없다고 검증"된 것으로 본다고 주장한다. <a class="fn" href="#src-52">[52]</a> 그러나 이는 판정기가 정확하다는 전제 위의 진술이다. 세 지표는 검색 관련성·답변 근거성·질문 적합성을 <strong>점검하는 수단</strong>이지, 높은 점수가 환각의 부재나 현실 세계의 사실 정확성을 보장하지는 않는다 — 예컨대 오래된 규정을 충실히 인용한 답은 Groundedness가 높아도 현재 기준으로 틀릴 수 있고, LLM 판정기 자체가 위치·장황함·자기 선호 편향과 제한된 추론 능력을 보인다는 연구가 있다(GPT-4 판정기와 사람의 일치율은 약 80%로, 사람끼리의 일치율과 같은 수준). <a class="fn" href="#src-62">[62]</a></p>
+<p>RAG는 <strong>검색(Retrieval)</strong> 과 <strong>생성(Generation)</strong> 두 단계로 이루어지므로 평가도 두 층으로 나눈다. Ragas 논문은 RAG 평가 차원을 "검색 시스템이 관련 있고 집중된 문맥 문단을 찾아내는 능력, LLM이 그 문단을 충실하게 활용하는 능력, 생성 자체의 품질"로 정리한다. <a class="fn" href="#src-33">[33]</a> TruLens는 같은 구도를 <strong>RAG Triad</strong>라 부른다: Context Relevance(검색 청크 ↔ 질문), Groundedness(응답 ↔ 검색 문맥), Answer Relevance(응답 ↔ 질문). TruLens는 세 평가를 통과하면 "지식 베이스의 한계 안에서 환각이 없다고 검증"된 것으로 본다고 주장한다. <a class="fn" href="#src-52">[52]</a> 그러나 이는 판정기가 정확하다는 전제 위의 진술이다. 세 지표는 검색 관련성·답변 근거성·질문 적합성을 <strong>점검하는 수단</strong>이지, 높은 점수가 환각의 부재나 현실 세계의 사실 정확성을 보장하지는 않는다 — 예컨대 오래된 규정을 충실히 인용한 답은 Groundedness가 높아도 현재 기준으로 틀릴 수 있고, LLM 판정기 자체가 위치·장황함·자기 선호 편향과 제한된 추론 능력을 보인다는 연구가 있다(GPT-4 판정기와 사람의 일치율은 약 80%로, 사람끼리의 일치율과 같은 수준). </p>
 <pre><code>질문 ──(Context Relevance / Context Precision·Recall)──▶ 검색 문맥
   │                                                        │
   │ (Answer Relevance / Response Relevancy)     (Groundedness / Faithfulness)
@@ -578,7 +578,7 @@ nDCG@5      = 1.062 / 2.131 = 0.50
 <td><strong>Noise Sensitivity</strong></td>
 <td>"관련/무관 검색 문서를 사용할 때 잘못된 응답을 내는 빈도", <strong>낮을수록 좋음</strong>. 공식 문서의 약식 수식은 <code>틀린 주장 수 / 전체 주장 수</code>이지만 <a class="fn" href="#src-50">[50]</a>, 구현은 각 주장을 (a) 참조 답안 기준으로 틀렸는지, (b) 어떤 검색 문맥이 뒷받침하는지 <strong>둘 다</strong> 판정한다. 검색 문맥 중 참조 답안의 주장을 뒷받침하는 것을 "관련 문맥"으로 정하고, <code>mode="relevant"</code> = <code>mean(관련 문맥이 뒷받침 AND 틀림)</code>, <code>mode="irrelevant"</code> = <code>mean(무관 문맥만 뒷받침 AND 틀림)</code>. 따라서 <strong>어느 문맥에도 없는 순수 환각은 세지 않는다</strong>(그건 Faithfulness의 몫). 문서 예시: 3개 주장 중 1개가 정답에 없는 내용 → 0.333</td>
 <td>○ (정답 대비 주장 판정)</td>
-<td><a class="fn" href="#src-50">[50]</a><a class="fn" href="#src-61">[61]</a></td>
+<td><a class="fn" href="#src-50">[50]</a></td>
 </tr>
 <tr>
 <td><strong>Factual Correctness / Correctness</strong></td>
@@ -594,7 +594,7 @@ nDCG@5      = 1.062 / 2.131 = 0.50
 </tr>
 </tbody>
 </table>
-<p>Faithfulness와 Noise Sensitivity의 차이: Faithfulness는 <strong>문맥에 근거했는가</strong>(문맥이 틀렸어도 문맥대로 답하면 만점), Noise Sensitivity는 <strong>문맥에 근거했지만 정답 기준으로 틀린</strong> 주장의 비율을 본다. <a class="fn" href="#src-35">[35]</a><a class="fn" href="#src-50">[50]</a><a class="fn" href="#src-61">[61]</a> 두 지표 모두 "참조 답안에 없는 내용"과 "현실에서 거짓인 내용"을 구분하지 못하므로, 참조 답안이 불완전하면 옳은 보충 설명이 오류로 집계된다 — 참조 답안 품질이 곧 지표 품질이다.</p>
+<p>Faithfulness와 Noise Sensitivity의 차이: Faithfulness는 <strong>문맥에 근거했는가</strong>(문맥이 틀렸어도 문맥대로 답하면 만점), Noise Sensitivity는 <strong>문맥에 근거했지만 정답 기준으로 틀린</strong> 주장의 비율을 본다. <a class="fn" href="#src-35">[35]</a><a class="fn" href="#src-50">[50]</a> 두 지표 모두 "참조 답안에 없는 내용"과 "현실에서 거짓인 내용"을 구분하지 못하므로, 참조 답안이 불완전하면 옳은 보충 설명이 오류로 집계된다 — 참조 답안 품질이 곧 지표 품질이다.</p>
 <h3 id="55">5.5 도구별 정리</h3>
 <p><strong>Ragas</strong> <a class="fn" href="#src-33">[33]</a><a class="fn" href="#src-34">[34]</a>
 - 논문(arXiv 2309.15217, 2023-09-26 / v2 2025-04-28): 참조 답안 없이(reference-free) RAG 파이프라인을 평가하는 프레임워크. 사람 주석 없이 빠른 평가 사이클이 목표. <a class="fn" href="#src-33">[33]</a>
@@ -617,7 +617,7 @@ result = evaluate(
 <pre><code>{'context_recall': 1.0000, 'faithfulness': 0.8571, 'factual_correctness': 0.7280}
 </code></pre>
 <blockquote>
-<p><strong>API 세대 주의</strong>: <code>LangchainLLMWrapper</code>는 v0.3→v0.4 마이그레이션 문서에서 deprecated로 표시됐다("Direct usage of LangChain LLMs with Ragas prompts is deprecated and will be removed in a future version"). 새 코드는 <code>ragas.llms.llm_factory("&lt;model&gt;", client=AsyncOpenAI(...))</code>처럼 네이티브 클라이언트를 넘기고, 지표도 <code>ragas.metrics.collections</code>의 Collections API로 옮겨간다. 위 예시는 시작 가이드에 아직 남아 있는 <strong>레거시 경로</strong>이므로 실행 시 사용하는 <code>ragas</code> 버전을 고정해 두고 두 방식을 구분한다. <a class="fn" href="#src-57">[57]</a></p>
+<p><strong>API 세대 주의</strong>: <code>LangchainLLMWrapper</code>는 v0.3→v0.4 마이그레이션 문서에서 deprecated로 표시됐다("Direct usage of LangChain LLMs with Ragas prompts is deprecated and will be removed in a future version"). 새 코드는 <code>ragas.llms.llm_factory("&lt;model&gt;", client=AsyncOpenAI(...))</code>처럼 네이티브 클라이언트를 넘기고, 지표도 <code>ragas.metrics.collections</code>의 Collections API로 옮겨간다. 위 예시는 시작 가이드에 아직 남아 있는 <strong>레거시 경로</strong>이므로 실행 시 사용하는 <code>ragas</code> 버전을 고정해 두고 두 방식을 구분한다. </p>
 </blockquote>
 <ul>
 <li>합성 테스트셋 생성: 문서를 청킹해 계층적 노드를 만들고, Extractor(예: NERExtractor)로 노드 속성을 뽑아 Relationship Builder로 노드를 연결한 <strong>지식 그래프</strong>를 구축한다. 그 위에서 <code>QuerySynthesizer</code>가 노드·질의 길이·스타일·페르소나를 조합해 <strong>Single-Hop Specific / Single-Hop Abstract / Multi-Hop Specific / Multi-Hop Abstract</strong> 네 유형의 질문을 참조 문맥·답안과 함께 생성한다. <a class="fn" href="#src-55">[55]</a></li>
@@ -747,7 +747,7 @@ client.create_examples(dataset_id=dataset.id, examples=examples)
 <h3 id="65-rag">6.5 멀티모달 RAG</h3>
 <ul>
 <li><strong>ColPali(ICLR 2025)</strong>: 문서는 텍스트뿐 아니라 그림, 페이지 레이아웃, 표, 폰트로 정보를 전달하는데, 기존 검색은 "길고 취약한" 텍스트 추출 과정에 의존해 시각 단서를 활용하지 못한다. ColPali는 페이지 이미지에서 직접 다중 벡터 임베딩을 만든다. 모델·데이터셋·코드가 Hugging Face에 공개됐다. <a class="fn" href="#src-42">[42]</a></li>
-<li><strong>평가</strong>: Ragas는 Multimodal Faithfulness, Multimodal Relevance 지표로 <strong>텍스트 + 이미지</strong> 문맥에 대한 응답의 충실성·관련성을 평가한다. 지표 문서가 명시한 입력은 문자열, 이미지 URL, 로컬 이미지 경로(jpg/png/gif/webp/bmp), base64 이미지이며 비디오는 포함되지 않는다. <a class="fn" href="#src-34">[34]</a><a class="fn" href="#src-58">[58]</a></li>
+<li><strong>평가</strong>: Ragas는 Multimodal Faithfulness, Multimodal Relevance 지표로 <strong>텍스트 + 이미지</strong> 문맥에 대한 응답의 충실성·관련성을 평가한다. 지표 문서가 명시한 입력은 문자열, 이미지 URL, 로컬 이미지 경로(jpg/png/gif/webp/bmp), base64 이미지이며 비디오는 포함되지 않는다. <a class="fn" href="#src-34">[34]</a></li>
 </ul>
 <h3 id="66">6.6 프로덕션 관점 — 비용, 지연, 보안</h3>
 <p><strong>비용·지연</strong>
