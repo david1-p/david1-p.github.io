@@ -7,10 +7,6 @@ tags: [jev, typesafe, system-one, choice, score, noul, confidence, rerank]
 
 TypeSafe 공식 문서(기준 모델 `jev-1.13.0`, 기준일 2026-09-20)를 바탕으로 정리한 기술 발표 자료입니다. 이 발표의 질문은 "텍스트 생성 모델과 다른 출력 계약이 소프트웨어 설계를 어떻게 바꾸는가"입니다. Jev를 더 작은 LLM이나 새로운 챗봇으로 소개하지 않습니다.
 
-[슬라이드 전체 화면으로 보기]({{ '/assets/slides/jev-tech-talk.html' | relative_url }}){:target="_blank"} (← → 이동, N 발표자 노트, F 전체 화면)
-
-<iframe src="{{ '/assets/slides/jev-tech-talk.html' | relative_url }}" style="width:100%;aspect-ratio:16/9;border:0;border-radius:8px" allowfullscreen loading="lazy"></iframe>
-
 ## 1. 생성형 LLM과 Jev의 출력 목적
 
 | | 일반 LLM (Generate) | Jev / System One (Decide) |
