@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="TypeSafe 공식 문서 기반 Jev 기술 발표 자료" />
+  <title>Jev 기술 발표 | 공식 문서 기반</title>
+  <style>
+    :root {
+      --bg: #071018;
+      --surface: #0d1a24;
+      --surface-2: #122431;
+      --ink: #f3f7f8;
+      --muted: #9fb0ba;
+      --line: rgba(194, 219, 229, 0.18);
+      --cyan: #42d3c8;
+      --cyan-soft: #a4eee8;
+      --amber: #ffbf69;
+      --coral: #ff7a6f;
+      --blue: #78a9ff;
+      --green: #72d69b;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+      --font: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", Inter, system-ui, sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #03080c; }
+    body { font-family: var(--font); color: var(--ink); }
+    a { color: inherit; }
+    button { font: inherit; }
+
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      background:
+        radial-gradient(circle at 85% 10%, rgba(66, 211, 200, 0.11), transparent 34%),
+        radial-gradient(circle at 5% 85%, rgba(120, 169, 255, 0.08), transparent 32%),
+        var(--bg);
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      padding: 150px clamp(48px, 7vw, 118px);
+      display: none;
+      grid-template-rows: 112px minmax(0, 1fr) 36px;
+      align-content: stretch;
+      gap: 12px;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 56px 56px;
+    }
+    .slide::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 10px;
+      height: 100%;
+      background: linear-gradient(var(--cyan), var(--blue));
+      opacity: .9;
+    }
+    .slide.active { display: grid; animation: slideIn .25s ease-out; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .eyebrow {
+      color: var(--cyan-soft);
+      font-size: clamp(14px, 1.2vw, 20px);
+      letter-spacing: .14em;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin: 0 0 10px;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      font-size: clamp(52px, 6.6vw, 104px);
+      line-height: .98;
+      letter-spacing: -.055em;
+      margin-bottom: 24px;
+    }
+    h2 {
+      font-size: clamp(32px, 2.65vw, 44px);
+      line-height: 1.08;
+      letter-spacing: -.035em;
+      margin-bottom: 0;
+      max-width: none;
+      white-space: nowrap;
+    }
+    h3 {
+      font-size: clamp(18px, 1.55vw, 26px);
+      line-height: 1.25;
+      letter-spacing: -.018em;
+      margin-bottom: 14px;
+    }
+    p, li, td, th {
+      font-size: clamp(16px, 1.15vw, 20px);
+      line-height: 1.52;
+    }
+    .lead {
+      color: #d9e5e9;
+      font-size: clamp(21px, 1.75vw, 29px);
+      line-height: 1.42;
+      letter-spacing: -.02em;
+      max-width: 1020px;
+    }
+    .muted { color: var(--muted); }
+    .small { font-size: clamp(13px, .9vw, 16px); line-height: 1.45; }
+    .accent { color: var(--cyan-soft); }
+    .amber { color: var(--amber); }
+    .coral { color: var(--coral); }
+    .green { color: var(--green); }
+    .mono { font-family: var(--mono); }
+    .nowrap { white-space: nowrap; }
+
+    .slide-head {
+      position: relative;
+      z-index: 2;
+      height: 112px;
+      overflow: hidden;
+    }
+    .slide > .slide-head,
+    .slide > .slide-body,
+    .slide > .slide-foot {
+      width: min(1180px, 100%);
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .slide-body {
+      min-height: 0;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .slide-foot {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+      font-size: 13px;
+    }
+    .slide-foot a { text-decoration: none; border-bottom: 1px solid rgba(159,176,186,.35); }
+    .source { max-width: 88%; line-height: 1.35; }
+    .page-no { color: var(--cyan-soft); font-weight: 800; letter-spacing: .08em; }
+
+    .cover {
+      background-size: 72px 72px;
+      grid-template-rows: 76px minmax(0, 1fr) 40px;
+      align-content: stretch;
+      gap: 12px;
+    }
+    .cover::after {
+      content: "J";
+      position: absolute;
+      right: 4vw;
+      bottom: -11vh;
+      font-size: min(68vw, 760px);
+      font-weight: 900;
+      line-height: .8;
+      color: transparent;
+      -webkit-text-stroke: 2px rgba(66, 211, 200, .16);
+      letter-spacing: -.12em;
+      pointer-events: none;
+    }
+    .cover .slide-head { height: 76px; }
+    .cover .slide-body {
+      justify-content: center;
+      max-width: 1180px;
+      padding-bottom: 4vh;
+    }
+    .cover .statement {
+      font-size: clamp(34px, 3.4vw, 54px);
+      white-space: nowrap;
+      max-width: none;
+    }
+    .cover .subtitle {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: clamp(18px, 1.6vw, 26px);
+      color: #c8d6dc;
+      white-space: nowrap;
+    }
+    .cover .subtitle::before { content: ""; width: 56px; height: 3px; background: var(--cyan); }
+    .presenter { color: var(--ink); font-weight: 750; white-space: nowrap; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(26px, 3vw, 46px); align-items: center; }
+    .two-col.wide-left { grid-template-columns: 1.3fr .7fr; }
+    .two-col.wide-right { grid-template-columns: .78fr 1.22fr; }
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(20px, 2vw, 30px); }
+    .four-col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .rule { height: 1px; background: var(--line); margin: 14px 0; }
+    .v-rule { width: 1px; background: var(--line); align-self: stretch; }
+
+    .statement {
+      font-size: clamp(26px, 2.45vw, 44px);
+      line-height: 1.24;
+      letter-spacing: -.035em;
+      font-weight: 750;
+      max-width: 1100px;
+    }
+    .statement strong { color: var(--cyan-soft); }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: clamp(16px, 2vw, 30px);
+      align-items: stretch;
+    }
+    .compare-side { padding: 10px 0 0; }
+    .compare-label {
+      font-size: clamp(42px, 5vw, 76px);
+      font-weight: 850;
+      letter-spacing: -.05em;
+      margin-bottom: 14px;
+    }
+    .compare ul { padding-left: 1.2em; margin: 16px 0 0; color: #d0dce1; }
+    .compare li { margin: 10px 0; }
+    .vs {
+      align-self: center;
+      color: var(--muted);
+      font: 700 18px var(--mono);
+      padding: 10px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr 1.05fr 1.2fr;
+      align-items: stretch;
+      gap: 18px;
+    }
+    .flow-step { border-top: 5px solid var(--cyan); padding: 22px 4px 8px; }
+    .flow-step:nth-child(2) { border-color: var(--blue); }
+    .flow-step:nth-child(3) { border-color: var(--amber); }
+    .step-no { color: var(--muted); font: 700 15px var(--mono); margin-bottom: 8px; }
+    .typed-output { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .typed-output span { border: 1px solid var(--line); padding: 9px 13px; color: #d7e4e9; font-family: var(--mono); font-size: 14px; }
+
+    .role-stack { display: grid; gap: 0; border-top: 1px solid var(--line); }
+    .role-row {
+      display: grid;
+      grid-template-columns: 170px 1fr 220px;
+      gap: 20px;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .role-name { font-size: clamp(22px, 2vw, 32px); font-weight: 800; }
+    .role-task { color: #d6e1e5; }
+    .role-rule { color: var(--muted); font-size: clamp(14px, 1vw, 16px); }
+
+    pre {
+      margin: 0;
+      background: #07131b;
+      color: #dcebee;
+      border: 1px solid rgba(120,169,255,.22);
+      border-radius: 4px;
+      padding: 22px 24px;
+      font: clamp(13px, .9vw, 16px)/1.55 var(--mono);
+      overflow: hidden;
+      white-space: pre-wrap;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    .io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+    .io-col { min-width: 0; border-top: 4px solid var(--blue); padding-top: 12px; }
+    .io-col.output { border-color: var(--cyan); }
+    .io-col h3 { margin-bottom: 10px; }
+    .io-col pre { padding: 14px 16px; font: clamp(10px, .72vw, 13px)/1.38 var(--mono); }
+    .io-summary { margin: 14px 0 0; color: #d6e1e5; font-size: clamp(14px, 1vw, 17px); }
+    .code-key { color: #8bc3ff; }
+    .code-val { color: #a8e8c3; }
+    .code-string { color: #ffd19a; }
+
+    .shape-table { width: 100%; border-collapse: collapse; }
+    .shape-table th { text-align: left; color: var(--muted); font-weight: 650; padding: 12px 12px; border-bottom: 1px solid var(--line); }
+    .shape-table td { padding: 16px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .shape-table td:first-child { color: var(--cyan-soft); font-weight: 800; white-space: nowrap; }
+    .shape-table.compact td, .shape-table.compact th { padding: 10px 10px; font-size: clamp(13px, .9vw, 16px); }
+
+    .primitive-list { border-top: 1px solid var(--line); }
+    .primitive-row {
+      display: grid;
+      grid-template-columns: 160px 1.15fr .85fr;
+      gap: 22px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: 18px 0;
+    }
+    .primitive-name { font: 800 clamp(30px, 3vw, 48px) var(--mono); color: var(--cyan-soft); }
+    .primitive-return { color: #c7d6dc; font-family: var(--mono); font-size: clamp(14px, 1vw, 17px); }
+
+    .prob-bars { display: grid; gap: 18px; }
+    .bar-row { display: grid; grid-template-columns: 150px 1fr 76px; gap: 16px; align-items: center; }
+    .bar-label { font: 700 clamp(14px, 1vw, 18px) var(--mono); }
+    .bar-track { height: 22px; background: rgba(255,255,255,.07); position: relative; overflow: hidden; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), #87eee6); }
+    .bar-fill.alt { background: linear-gradient(90deg, var(--blue), #b5cbff); }
+    .bar-fill.warn { background: linear-gradient(90deg, var(--amber), #ffe0a9); }
+    .bar-val { text-align: right; font: 800 16px var(--mono); }
+
+    .metric-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    .metric { border-top: 4px solid var(--cyan); padding-top: 16px; }
+    .metric:nth-child(2) { border-color: var(--blue); }
+    .metric-big { font-size: clamp(48px, 6vw, 90px); font-weight: 850; letter-spacing: -.05em; line-height: 1; }
+    .metric-caption { color: var(--muted); font-size: clamp(14px, 1vw, 17px); margin-top: 12px; }
+
+    .formula {
+      font: 750 clamp(25px, 2.7vw, 42px)/1.35 var(--mono);
+      color: var(--cyan-soft);
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+    }
+
+    .threshold {
+      position: relative;
+      height: 96px;
+      display: grid;
+      grid-template-columns: 3fr 4fr 3fr;
+      margin: 28px 0 18px;
+      border: 1px solid var(--line);
+    }
+    .threshold > div { display: grid; place-items: center; font-weight: 800; font-size: clamp(15px, 1.15vw, 19px); text-align: center; }
+    .threshold .no { background: rgba(120,169,255,.15); }
+    .threshold .review { background: rgba(255,191,105,.18); }
+    .threshold .yes { background: rgba(114,214,155,.17); }
+    .threshold-labels { display: grid; grid-template-columns: 3fr 4fr 3fr; color: var(--muted); font: 14px var(--mono); }
+    .threshold-labels span:nth-child(2) { text-align: center; }
+    .threshold-labels span:last-child { text-align: right; }
+
+    .question-split { display: grid; grid-template-columns: .72fr 1.28fr; gap: 36px; align-items: center; }
+    .bad-question { border-left: 6px solid var(--coral); padding: 20px 24px; background: rgba(255,122,111,.07); }
+    .atom-list { display: grid; gap: 12px; }
+    .atom { display: grid; grid-template-columns: 42px 1fr; gap: 16px; align-items: center; border-bottom: 1px solid var(--line); padding: 10px 0; }
+    .atom-no { font: 800 14px var(--mono); color: var(--cyan); }
+
+    .pattern-line { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .pattern { padding: 16px 18px 18px 0; margin-right: 18px; border-right: 1px solid var(--line); }
+    .pattern:last-child { border-right: 0; margin-right: 0; }
+    .pattern-index { font: 800 14px var(--mono); color: var(--cyan); margin-bottom: 18px; }
+    .pattern p { color: var(--muted); font-size: clamp(14px, .95vw, 16px); margin-bottom: 0; }
+
+    .benchmark {
+      display: grid;
+      grid-template-columns: .82fr 1.18fr;
+      gap: 34px;
+      align-items: center;
+    }
+    .bench-list { display: grid; gap: 13px; }
+    .bench-row { display: grid; grid-template-columns: 210px 1fr 95px; gap: 14px; align-items: center; }
+    .bench-name { font: 650 clamp(13px, .9vw, 16px) var(--mono); overflow: hidden; text-overflow: ellipsis; }
+    .bench-track { height: 18px; background: rgba(255,255,255,.07); }
+    .bench-fill { height: 100%; background: var(--blue); min-width: 2px; }
+    .bench-row.highlight .bench-fill { background: var(--cyan); }
+    .bench-val { text-align: right; font: 750 15px var(--mono); }
+    .caveat { border-left: 4px solid var(--amber); padding: 12px 0 12px 18px; color: #d9c8a8; font-size: clamp(13px, .9vw, 15px); }
+
+    .before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: end; }
+    .measure-block { border-top: 4px solid var(--blue); padding-top: 16px; }
+    .measure-block.after { border-color: var(--cyan); }
+    .slide-parallel-compact .metric-big { font-size: clamp(34px, 4.2vw, 64px); }
+    .slide-parallel-compact .lead { font-size: clamp(18px, 1.35vw, 23px); }
+    .slide-parallel-compact .measure-block > .muted { font-size: clamp(13px, .9vw, 15px); }
+    .slide-parallel-compact .measure-block .eyebrow { font-size: clamp(12px, .85vw, 15px); }
+    .slide-parallel-compact .metric-caption { font-size: clamp(13px, .9vw, 15px); }
+    .slide-parallel-compact .caveat { font-size: clamp(12px, .82vw, 14px); line-height: 1.4; }
+    .measure-row { display: grid; grid-template-columns: 72px 1fr 72px; gap: 14px; align-items: center; margin: 15px 0; }
+    .measure-track { height: 20px; background: rgba(255,255,255,.07); }
+    .measure-fill { height: 100%; background: var(--blue); }
+    .after .measure-fill { background: var(--cyan); }
+    .measure-val { text-align: right; font: 800 15px var(--mono); }
+
+    .failure-groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
+    .failure-group { border-top: 5px solid var(--coral); padding-top: 20px; }
+    .failure-group:nth-child(2) { border-color: var(--amber); }
+    .failure-group:nth-child(3) { border-color: var(--blue); }
+    .failure-group ul { padding-left: 1.1em; margin: 12px 0 0; }
+    .failure-group li { margin: 8px 0; color: #d2dfe4; }
+
+    .spec-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 34px; align-items: start; }
+    .spec-list { border-top: 1px solid var(--line); }
+    .spec-row { display: grid; grid-template-columns: 155px 1fr; border-bottom: 1px solid var(--line); padding: 13px 0; gap: 18px; }
+    .spec-row dt { color: var(--muted); font-size: clamp(13px, .9vw, 15px); }
+    .spec-row dd { margin: 0; font: 650 clamp(14px, 1vw, 17px)/1.42 var(--mono); }
+    .risk-callout { border-top: 5px solid var(--amber); padding-top: 20px; }
+
+    .fit-split { display: grid; grid-template-columns: 1fr 1fr; gap: 38px; }
+    .fit-col { border-top: 5px solid var(--green); padding-top: 18px; }
+    .fit-col.avoid { border-color: var(--coral); }
+    .fit-col ul { padding-left: 1.2em; }
+    .fit-col li { margin: 10px 0; color: #d4e0e5; }
+
+    .steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+    .step { border-top: 4px solid var(--cyan); padding-top: 16px; }
+    .step:nth-child(2) { border-color: #61c4e8; }
+    .step:nth-child(3) { border-color: var(--blue); }
+    .step:nth-child(4) { border-color: var(--amber); }
+    .step:nth-child(5) { border-color: var(--green); }
+    .step strong { display: block; font: 800 14px var(--mono); color: var(--muted); margin-bottom: 10px; }
+    .step p { font-size: clamp(14px, .95vw, 16px); margin: 0; }
+
+    .source-list { columns: 2; column-gap: 56px; margin: 0; padding: 0; list-style: none; }
+    .source-list li { break-inside: avoid; border-bottom: 1px solid var(--line); padding: 12px 0; font-size: clamp(13px, .9vw, 16px); }
+    .source-list a { text-decoration: none; color: #dbe8ec; }
+    .source-list span { display: block; color: var(--muted); font: 12px var(--mono); margin-top: 4px; word-break: break-all; }
+
+    .controls {
+      position: fixed;
+      z-index: 20;
+      right: 24px;
+      bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: .72;
+      transition: opacity .2s;
+    }
+    .controls:hover { opacity: 1; }
+    .controls button {
+      color: var(--ink);
+      background: rgba(13,26,36,.88);
+      border: 1px solid var(--line);
+      width: 40px;
+      height: 36px;
+      cursor: pointer;
+    }
+    .progress { position: fixed; z-index: 21; left: 0; bottom: 0; height: 4px; background: var(--cyan); width: 0; transition: width .2s ease; }
+    .counter { min-width: 62px; color: var(--muted); font: 13px var(--mono); text-align: center; }
+
+    .notes-panel {
+      position: fixed;
+      z-index: 30;
+      left: 24px;
+      bottom: 24px;
+      width: min(620px, calc(100vw - 48px));
+      max-height: 42vh;
+      overflow: auto;
+      background: rgba(5, 13, 18, .96);
+      border: 1px solid rgba(66,211,200,.38);
+      box-shadow: var(--shadow);
+      padding: 20px 22px;
+      display: none;
+      color: #d6e4e8;
+      font-size: 16px;
+      line-height: 1.58;
+    }
+    .notes-panel.open { display: block; }
+    .notes-panel strong { color: var(--cyan-soft); }
+    .notes { display: none; }
+
+    .help {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      place-items: center;
+      background: rgba(2, 7, 10, .86);
+      backdrop-filter: blur(8px);
+    }
+    .help.open { display: grid; }
+    .help-card { width: min(760px, 88vw); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); padding: 34px; }
+    .key-grid { display: grid; grid-template-columns: 100px 1fr; gap: 12px 20px; }
+    kbd { font: 700 14px var(--mono); border: 1px solid var(--line); background: #07131b; padding: 5px 8px; color: var(--cyan-soft); }
+
+    body.overview { overflow: auto; background: #050b10; }
+    body.overview .deck { height: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding: 20px; }
+    body.overview .slide { position: relative; display: grid; aspect-ratio: 16 / 9; height: auto; padding: 24px 32px 30px; transform: scale(1); overflow: hidden; border: 1px solid var(--line); cursor: pointer; }
+    body.overview .slide::before { width: 5px; }
+    body.overview .slide h1 { font-size: 34px; }
+    body.overview .slide h2 { font-size: 24px; }
+    body.overview .slide h3 { font-size: 17px; }
+    body.overview .slide p, body.overview .slide li, body.overview .slide td, body.overview .slide th { font-size: 10px; }
+    body.overview .slide-foot { font-size: 7px; padding-top: 6px; }
+    body.overview .controls, body.overview .progress { display: none; }
+
+    @media (max-width: 980px) {
+      .slide { padding: 150px 46px; }
+      .two-col, .two-col.wide-left, .two-col.wide-right, .benchmark, .spec-grid, .fit-split, .question-split, .io-grid { grid-template-columns: 1fr; gap: 26px; }
+      .three-col, .failure-groups { grid-template-columns: repeat(2, 1fr); }
+      .four-col, .pattern-line, .steps { grid-template-columns: repeat(2, 1fr); }
+      .pattern:nth-child(2) { border-right: 0; }
+      .role-row { grid-template-columns: 140px 1fr; }
+      .role-rule { grid-column: 2; }
+      .flow { grid-template-columns: 1fr; }
+      body.overview .deck { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media print {
+      @page { size: 13.333in 7.5in; margin: 0; }
+      html, body { overflow: visible; background: #fff; }
+      .deck { width: auto; height: auto; background: none; }
+      .slide { position: relative; display: grid !important; width: 13.333in; height: 7.5in; page-break-after: always; break-after: page; padding: 150px .72in; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .controls, .progress, .notes-panel, .help { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-label="Jev 기술 발표 자료">
+
+    <section class="slide cover active" data-title="표지">
+      <header class="slide-head">
+        <p class="eyebrow">TypeSafe 공식 문서 기반</p>
+      </header>
+      <div class="slide-body">
+        <h1>Jev</h1>
+        <p class="statement">생성형 LLM과 다른 <strong>의사결정 모델</strong></p>
+        <p class="subtitle">State, Primitives, Probability, Production</p>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">기준 모델: <span class="mono">jev-1.13.0</span> · 기준일: 2026-09-20</span>
+        <span class="presenter">발표자 david1-p</span>
+        <span class="page-no">01</span>
+      </footer>
+      <aside class="notes"><strong>발표 도입:</strong> Jev를 더 작은 LLM이나 새로운 챗봇으로 소개하지 않는다. 이 발표의 질문은 “텍스트 생성 모델과 다른 출력 계약이 소프트웨어 설계를 어떻게 바꾸는가”이다.</aside>
+    </section>
+
+    <section class="slide" data-title="생성과 판단의 차이">
+      <header class="slide-head">
+        <p class="eyebrow">01 · Problem framing</p>
+        <h2>생성형 LLM과 Jev의 출력 목적</h2>
+      </header>
+      <div class="slide-body">
+        <div class="compare">
+          <div class="compare-side">
+            <div class="compare-label">Generate</div>
+            <h3>일반 LLM</h3>
+            <ul>
+              <li>사람이 읽을 텍스트와 코드를 생성</li>
+              <li>열린 답변 공간과 복합 추론에 적합</li>
+              <li>구조화 출력도 생성 과정의 결과</li>
+            </ul>
+          </div>
+          <div class="vs">VS</div>
+          <div class="compare-side">
+            <div class="compare-label accent">Decide</div>
+            <h3>Jev / System One</h3>
+            <ul>
+              <li>코드가 직접 쓸 타입이 정해진 답을 반환</li>
+              <li>호출자가 답의 공간을 먼저 정의</li>
+              <li>선택지별 확률과 불확실성을 노출</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/introduction">Introduction</a> · <a href="https://docs.typesafe.ai/concepts/system-one">System One</a></span>
+        <span class="page-no">02</span>
+      </footer>
+      <aside class="notes"><strong>핵심:</strong> 공식 문서는 LLM을 인간이 읽을 텍스트를 만드는 시스템으로, System One을 소프트웨어가 직접 사용할 결정을 만드는 시스템으로 구분한다. Jev는 답변, 코드, 추론 설명을 생성하지 않는다.</aside>
+    </section>
+
+    <section class="slide" data-title="System One의 계약">
+      <header class="slide-head">
+        <p class="eyebrow">02 · System One</p>
+        <h2>System One의 입력과 출력 계약</h2>
+      </header>
+      <div class="slide-body">
+        <div class="flow">
+          <div class="flow-step">
+            <div class="step-no">INPUT</div>
+            <h3>State</h3>
+            <p class="muted">문자열, JSON 객체, 텍스트 배열로 판단 대상과 근거를 제공한다.</p>
+          </div>
+          <div class="flow-step">
+            <div class="step-no">EVALUATION</div>
+            <h3>Typed questions</h3>
+            <p class="muted">Choice, Score, Noul 질문을 같은 State에 대해 독립적으로 평가한다.</p>
+          </div>
+          <div class="flow-step">
+            <div class="step-no">OUTPUT</div>
+            <h3>Typed answers + probabilities</h3>
+            <p class="muted">코드가 비교하고 정렬하고 임계값으로 분기할 수 있는 값을 반환한다.</p>
+            <div class="typed-output"><span>choice</span><span>score</span><span>noul</span><span>probabilities</span></div>
+          </div>
+        </div>
+        <div class="rule"></div>
+        <p class="lead">질문 간 숨은 대화 문맥을 만들지 않고, <span class="accent">각 질문을 같은 State에 대해 독립적으로 평가</span>한다.</p>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/concepts/system-one">System One</a> · <a href="https://docs.typesafe.ai/primitives">Primitives</a></span>
+        <span class="page-no">03</span>
+      </footer>
+      <aside class="notes"><strong>System One의 공식 정의:</strong> State를 평가하고 typed answers와 probabilities를 반환하는 AI 모델 부류다. 질문은 병렬로 처리되며, 한 질문의 결과가 다른 질문의 숨은 문맥이 되지 않는다.</aside>
+    </section>
+
+    <section class="slide" data-title="역할 분담 아키텍처">
+      <header class="slide-head">
+        <p class="eyebrow">03 · Architecture</p>
+        <h2>코드가 소유하는 워크플로 제어</h2>
+      </header>
+      <div class="slide-body">
+        <div class="role-stack">
+          <div class="role-row">
+            <div class="role-name">코드</div>
+            <div class="role-task">계산, 검증, 정책 결합, 외부 API 호출과 부수효과</div>
+            <div class="role-rule">결정론적으로 표현 가능한 일</div>
+          </div>
+          <div class="role-row">
+            <div class="role-name accent">Jev</div>
+            <div class="role-task">분류, 관련성, 위험, 적합성 같은 좁은 의미 판단</div>
+            <div class="role-rule">빠른 원자적 판단</div>
+          </div>
+          <div class="role-row">
+            <div class="role-name">일반 LLM</div>
+            <div class="role-task">답변 작성, 요약, 코드 생성, 계획과 다단계 추론</div>
+            <div class="role-rule">열린 생성과 숙고</div>
+          </div>
+          <div class="role-row">
+            <div class="role-name amber">사람</div>
+            <div class="role-task">고위험 결정, 불확실 사례, 정책 예외와 최종 책임</div>
+            <div class="role-rule">판단 책임과 승인</div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/concepts/how-to-build-with-system-one">How to build with TypeSafe</a> · <a href="https://docs.typesafe.ai/patterns/intent-routing">Intent routing</a></span>
+        <span class="page-no">04</span>
+      </footer>
+      <aside class="notes"><strong>설명:</strong> TypeSafe의 권장 구조는 평범한 소프트웨어 워크플로를 먼저 만들고, AI가 필요한 지점에 System One을 삽입하는 방식이다. 송금, 삭제, DB 변경 같은 행동은 코드가 실행한다.</aside>
+    </section>
+
+    <section class="slide" data-title="State 설계">
+      <header class="slide-head">
+        <p class="eyebrow">04 · Input contract</p>
+        <h2>State 입력 계약</h2>
+      </header>
+      <div class="slide-body">
+        <div class="two-col wide-right">
+          <div>
+            <table class="shape-table">
+              <thead><tr><th>형식</th><th>용도</th></tr></thead>
+              <tbody>
+                <tr><td>String</td><td>메시지나 짧은 문단 하나</td></tr>
+                <tr><td>Object</td><td>이름 있는 필드와 관련 레코드</td></tr>
+                <tr><td>Array</td><td>대화나 레코드의 시퀀스</td></tr>
+              </tbody>
+            </table>
+            <p class="small muted" style="margin-top:20px">공식 문서는 대부분의 요청에서 관계가 드러나는 JSON 객체를 권장한다.</p>
+          </div>
+          <pre>{
+  <span class="code-key">"ticket"</span>: {
+    <span class="code-key">"message"</span>: <span class="code-string">"같은 주문이 두 번 결제됐습니다."</span>
+  },
+  <span class="code-key">"charges"</span>: [
+    {<span class="code-key">"amount"</span>: <span class="code-val">49000</span>, <span class="code-key">"status"</span>: <span class="code-string">"captured"</span>},
+    {<span class="code-key">"amount"</span>: <span class="code-val">49000</span>, <span class="code-key">"status"</span>: <span class="code-string">"captured"</span>}
+  ],
+  <span class="code-key">"refund_policy"</span>: <span class="code-string">"중복 결제는 환불 가능"</span>
+}</pre>
+        </div>
+        <div class="rule"></div>
+        <p class="lead">State에는 <span class="accent">사실과 문맥</span>을, Question에는 <span class="accent">판단 기준</span>을 둔다.</p>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/concepts/state">State</a> · 텍스트 입력만 지원</span>
+        <span class="page-no">05</span>
+      </footer>
+      <aside class="notes"><strong>설계 원칙:</strong> 필요한 근거만 보내고, 질문에서 중첩 경로를 명시한다. Jev는 이미지, 음성, 영상을 직접 받지 않으므로 먼저 텍스트나 구조화 필드로 변환해야 한다.</aside>
+    </section>
+
+    <section class="slide" data-title="Jev 입력과 출력 예시">
+      <header class="slide-head">
+        <p class="eyebrow">05 · Official API example</p>
+        <h2>공식 Choice 요청과 응답</h2>
+      </header>
+      <div class="slide-body">
+        <div class="io-grid">
+          <div class="io-col">
+            <h3>Input · State + typed question</h3>
+            <pre><span class="code-key">state</span> = <span class="code-string">"My running shoes arrived in the wrong size.
+Can I swap them for a size 10?"</span>
+
+<span class="code-key">questions</span> = {
+  <span class="code-string">"department"</span>: Choice(
+    instructions=<span class="code-string">"Which team should handle this?"</span>,
+    criteria={
+      <span class="code-string">"returns"</span>: <span class="code-string">"Exchanges, wrong or damaged items"</span>,
+      <span class="code-string">"shipping"</span>: <span class="code-string">"Delivery status, delays, lost packages"</span>,
+      <span class="code-string">"billing"</span>: <span class="code-string">"Charges, invoices, payment problems"</span>
+    }
+  )
+}</pre>
+          </div>
+          <div class="io-col output">
+            <h3>Output · Typed answer + uncertainty</h3>
+            <pre>{
+  <span class="code-key">"model"</span>: <span class="code-string">"jev-1.13.0"</span>,
+  <span class="code-key">"answers"</span>: {
+    <span class="code-key">"department"</span>: {
+      <span class="code-key">"type"</span>: <span class="code-string">"choice"</span>,
+      <span class="code-key">"choice"</span>: <span class="code-string">"returns"</span>,
+      <span class="code-key">"confidence"</span>: <span class="code-val">1.0</span>,
+      <span class="code-key">"probabilities"</span>: {
+        <span class="code-key">"shipping"</span>: <span class="code-val">0.0</span>,
+        <span class="code-key">"returns"</span>: <span class="code-val">1.0</span>,
+        <span class="code-key">"billing"</span>: <span class="code-val">0.0</span>
+      }
+    }
+  },
+  <span class="code-key">"usage"</span>: {<span class="code-key">"input_tokens"</span>: <span class="code-val">328</span>, <span class="code-key">"output_tokens"</span>: <span class="code-val">34</span>}
+}</pre>
+          </div>
+        </div>
+        <p class="io-summary">질문 ID <span class="mono accent">department</span>가 응답 키로 유지된다. 코드는 <span class="mono">choice</span>로 분기하고 <span class="mono">probabilities</span>와 <span class="mono">confidence</span>로 검토 정책을 정한다.</p>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/primitives/choice">Choice</a> · 공식 SDK 요청 예시를 화면용으로 축약, 응답값은 원문 유지</span>
+        <span class="page-no">06</span>
+      </footer>
+      <aside class="notes"><strong>읽는 순서:</strong> 왼쪽에서 State와 답의 공간을 함께 보낸다. Jev는 자유로운 문장을 생성하지 않고 오른쪽처럼 타입이 정해진 답을 돌려준다. 이 쉬운 티켓에서는 returns가 1.0이다. 실제 경계 사례에서는 분포가 여러 옵션으로 갈리고 confidence가 낮아지므로 코드가 자동 처리와 사람 검토를 나눈다.</aside>
+    </section>
+
+    <section class="slide" data-title="세 가지 Primitive">
+      <header class="slide-head">
+        <p class="eyebrow">06 · Output contract</p>
+        <h2>Choice, Score, Noul</h2>
+      </header>
+      <div class="slide-body">
+        <div class="primitive-list">
+          <div class="primitive-row">
+            <div class="primitive-name">Choice</div>
+            <div><h3>정해진 후보 중 하나</h3><p class="muted">담당 부서, 문서 유형, 프로그래밍 언어</p></div>
+            <div class="primitive-return">choice<br>probabilities<br>confidence</div>
+          </div>
+          <div class="primitive-row">
+            <div class="primitive-name">Score</div>
+            <div><h3>설명 가능한 순서형 수준</h3><p class="muted">버그 심각도, 고객 불만도, 기술 숙련도</p></div>
+            <div class="primitive-return">score · legend<br>probabilities<br>confidence</div>
+          </div>
+          <div class="primitive-row">
+            <div class="primitive-name">Noul</div>
+            <div><h3>하나의 명제가 참인가</h3><p class="muted">환불 요청, 개인정보 포함, 사람 상담 요청</p></div>
+            <div class="primitive-return">noul = P(yes)</div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/primitives">Primitives</a></span>
+        <span class="page-no">07</span>
+      </footer>
+      <aside class="notes"><strong>선택 기준:</strong> 코드가 바로 행동할 수 있는 답의 형태를 선택한다. Choice는 분기, Score는 순서형 기준과 임계값, Noul은 하나의 명제에 대한 yes 확률이다.</aside>
+    </section>
+
+    <section class="slide" data-title="Choice와 확률 벡터">
+      <header class="slide-head">
+        <p class="eyebrow">07 · Choice</p>
+        <h2>Choice의 확률 벡터</h2>
+      </header>
+      <div class="slide-body">
+        <div class="two-col wide-left">
+          <div>
+            <div class="prob-bars">
+              <div class="bar-row"><div class="bar-label">returns</div><div class="bar-track"><div class="bar-fill" style="width:61%"></div></div><div class="bar-val">0.61</div></div>
+              <div class="bar-row"><div class="bar-label">billing</div><div class="bar-track"><div class="bar-fill alt" style="width:35%"></div></div><div class="bar-val">0.35</div></div>
+              <div class="bar-row"><div class="bar-label">shipping</div><div class="bar-track"><div class="bar-fill warn" style="width:4%"></div></div><div class="bar-val">0.04</div></div>
+            </div>
+            <div class="rule"></div>
+            <p class="statement"><span class="accent">choice = returns</span><br><span class="muted">confidence = 0.42</span></p>
+          </div>
+          <div>
+            <h3>공식 예시가 보여주는 것</h3>
+            <ul>
+              <li>최고 확률 옵션이 선택 결과가 된다.</li>
+              <li>전체 분포의 합은 1이다.</li>
+              <li>두 번째 후보 0.35도 라우팅 정보로 활용할 수 있다.</li>
+              <li>옵션은 최대 255개까지 정의할 수 있다.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/primitives/choice">Choice</a> · 공식 복합 티켓 응답값</span>
+        <span class="page-no">08</span>
+      </footer>
+      <aside class="notes"><strong>질문에 대한 답:</strong> Choice의 probabilities는 개념적으로 벡터이며 API에서는 옵션 이름과 확률의 맵으로 표현된다. confidence는 이 벡터가 얼마나 한곳에 집중되는지를 하나의 숫자로 요약한다.</aside>
+    </section>
+
+    <section class="slide" data-title="Score의 의미">
+      <header class="slide-head">
+        <p class="eyebrow">08 · Score</p>
+        <h2>Score의 확률가중 평균</h2>
+      </header>
+      <div class="slide-body">
+        <div class="two-col">
+          <div>
+            <div class="prob-bars">
+              <div class="bar-row"><div class="bar-label">0 Cosmetic</div><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><div class="bar-val">0.00</div></div>
+              <div class="bar-row"><div class="bar-label">1 Workaround</div><div class="bar-track"><div class="bar-fill alt" style="width:57%"></div></div><div class="bar-val">0.57</div></div>
+              <div class="bar-row"><div class="bar-label">2 Blocking</div><div class="bar-track"><div class="bar-fill warn" style="width:43%"></div></div><div class="bar-val">0.43</div></div>
+            </div>
+            <div class="formula">0×0.00 + 1×0.57 + 2×0.43 = 1.43</div>
+          </div>
+          <div>
+            <div class="metric-pair">
+              <div class="metric"><div class="metric-big">1.43</div><div class="metric-caption">score · 수준 축 위의 위치</div></div>
+              <div class="metric"><div class="metric-big">0.35</div><div class="metric-caption">confidence · 분포 집중도</div></div>
+            </div>
+            <p style="margin-top:28px">같은 score라도 분포가 다를 수 있다. 정확한 양이나 비율로 해석하지 않고 <span class="accent">probabilities와 함께 읽는다.</span></p>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/primitives/score">Score</a> · 2~10개 수준 지원</span>
+        <span class="page-no">09</span>
+      </footer>
+      <aside class="notes"><strong>주의:</strong> Score는 실제 수량을 복원하는 도구가 아니다. 공식 jaggedness 문서는 score level의 수치 보정이 약하므로 정확한 크기를 보간하지 말라고 경고한다.</aside>
+    </section>
+
+    <section class="slide" data-title="Noul의 의미">
+      <header class="slide-head">
+        <p class="eyebrow">09 · Noul</p>
+        <h2>Noul의 P(yes)</h2>
+      </header>
+      <div class="slide-body">
+        <div class="two-col wide-left">
+          <div>
+            <p class="statement">“고객이 사람 상담을 요청하는가?”</p>
+            <div class="metric" style="margin-top:28px"><div class="metric-big accent">0.99</div><div class="metric-caption"><span class="mono">noul = P(yes)</span> · 별도 confidence 없음</div></div>
+          </div>
+          <div>
+            <h3>중간값의 의미</h3>
+            <p class="lead">0.5는 “중간 정도”가 아니라 <span class="amber">yes와 no 사이의 불확실성</span>이다.</p>
+            <div class="threshold">
+              <div class="no">NO</div><div class="review">REVIEW</div><div class="yes">YES</div>
+            </div>
+            <div class="threshold-labels"><span>0.0</span><span>정책에 따른 검토 구간</span><span>1.0</span></div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/primitives/noul">Noul</a></span>
+        <span class="page-no">10</span>
+      </footer>
+      <aside class="notes"><strong>사용법:</strong> false positive가 비싸면 yes 임계값을 높이고, true positive를 놓치는 것이 비싸면 낮춘다. 여러 속성이 동시에 참일 수 있는 다중 라벨 체크리스트에는 여러 Noul을 같은 호출에 넣는다.</aside>
+    </section>
+
+    <section class="slide" data-title="Probability와 Confidence">
+      <header class="slide-head">
+        <p class="eyebrow">10 · Uncertainty</p>
+        <h2>Probability와 Confidence</h2>
+      </header>
+      <div class="slide-body">
+        <div class="two-col">
+          <div>
+            <div class="metric-pair">
+              <div class="metric"><div class="metric-big">[ ]</div><div class="metric-caption"><strong>probabilities</strong><br>옵션·수준 전체에 분배된 정보</div></div>
+              <div class="metric"><div class="metric-big">0…1</div><div class="metric-caption"><strong>confidence</strong><br>분포 집중도를 요약한 스칼라</div></div>
+            </div>
+            <p class="small muted" style="margin-top:24px">Noul은 이진 분포이므로 <span class="mono">P(yes)</span> 하나가 분포를 완전히 나타낸다.</p>
+          </div>
+          <div>
+            <h3>해석에서 지켜야 할 경계</h3>
+            <ul>
+              <li>최고 확률과 confidence는 같은 값이 아니다.</li>
+              <li>confidence 0.8은 개별 답의 80% 정답 보증이 아니다.</li>
+              <li>Calibration은 예측 집단에서 측정하는 통계적 성질이다.</li>
+              <li>실제 임계값은 자체 데이터와 행동 위험으로 정한다.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/confidence">Confidence</a> · <a href="https://docs.typesafe.ai/concepts/system-one">System One</a></span>
+        <span class="page-no">11</span>
+      </footer>
+      <aside class="notes"><strong>발표 포인트:</strong> 확률을 보여준다는 사실만으로 신뢰성이 보장되지 않는다. 프로젝트 데이터에서 confidence와 정확도의 관계를 측정하고, 업무 위험별로 다른 threshold를 둬야 한다.</aside>
+    </section>
+
+    <section class="slide" data-title="원자적 질문 설계">
+      <header class="slide-head">
+        <p class="eyebrow">11 · Question design</p>
+        <h2>원자적 질문 설계</h2>
+      </header>
+      <div class="slide-body">
+        <div class="question-split">
+          <div class="bad-question">
+            <p class="eyebrow coral">Broad question</p>
+            <p class="statement">“이 티켓을 분석하고 최선의 처리를 결정해줘”</p>
+          </div>
+          <div>
+            <p class="eyebrow">Atomic questions</p>
+            <div class="atom-list">
+              <div class="atom"><div class="atom-no">Q1</div><div>주요 의도는 무엇인가?</div></div>
+              <div class="atom"><div class="atom-no">Q2</div><div>고객이 환불을 명시적으로 요청했는가?</div></div>
+              <div class="atom"><div class="atom-no">Q3</div><div>정책이 이 요청을 지원하는가?</div></div>
+              <div class="atom"><div class="atom-no">Q4</div><div>문제의 심각도는 어느 수준인가?</div></div>
+              <div class="atom"><div class="atom-no">CODE</div><div>가중치, 임계값, 정책 예외를 결합한다.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/primitives">Primitives</a> · <a href="https://docs.typesafe.ai/concepts/how-to-build-with-system-one">How to build with TypeSafe</a></span>
+        <span class="page-no">12</span>
+      </footer>
+      <aside class="notes"><strong>왜 분해하는가:</strong> 독립 요소를 한 질문에 숨기면 무엇이 틀렸는지 찾기 어렵다. 질문을 분해하면 각각을 테스트하고, 코드에서 가중치만 바꾸며 정책을 조정할 수 있다.</aside>
+    </section>
+
+    <section class="slide" data-title="대표 아키텍처 패턴">
+      <header class="slide-head">
+        <p class="eyebrow">12 · Patterns</p>
+        <h2>코드 중심의 네 가지 아키텍처 패턴</h2>
+      </header>
+      <div class="slide-body">
+        <div class="pattern-line">
+          <div class="pattern"><div class="pattern-index">01</div><h3>Speculative fan-out</h3><p>필요할 수 있는 독립 질문을 한 요청에 보내고 코드가 사용할 답을 고른다.</p></div>
+          <div class="pattern"><div class="pattern-index">02</div><h3>Confidence routing</h3><p>답의 종류와 confidence를 함께 보고 자동 처리, 확인, 검토로 나눈다.</p></div>
+          <div class="pattern"><div class="pattern-index">03</div><h3>Composite scoring</h3><p>여러 Score를 정규화하고 업무 가중치는 코드에서 결합한다.</p></div>
+          <div class="pattern"><div class="pattern-index">04</div><h3>Intent routing</h3><p>결정론적 코드, 전문 LLM, 사람 중 적절한 처리기로 보낸다.</p></div>
+        </div>
+        <div class="rule"></div>
+        <p class="lead"><span class="accent">답은 무엇인지</span> 알려주고, <span class="amber">confidence는 행동할지</span> 결정하는 두 번째 축이 된다.</p>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/patterns">Patterns</a> · <a href="https://docs.typesafe.ai/patterns/confidence-routing">Confidence-gated routing</a></span>
+        <span class="page-no">13</span>
+      </footer>
+      <aside class="notes"><strong>주의:</strong> 공식 예시의 0.6, 0.85 같은 수치는 출발점일 뿐이다. 문서도 올바른 threshold는 도메인, 모델 성능, 오판 비용에 따라 정하라고 명시한다.</aside>
+    </section>
+
+    <section class="slide" data-title="공식 자기일관성 실험">
+      <header class="slide-head">
+        <p class="eyebrow">13 · Official cookbook</p>
+        <h2>14문항 루브릭의 공식 자기일관성 실험</h2>
+      </header>
+      <div class="slide-body">
+        <div class="benchmark">
+          <div>
+            <div class="metric"><div class="metric-big accent">111ms</div><div class="metric-caption">Jev 평균 왕복 지연시간</div></div>
+            <div class="metric" style="margin-top:24px"><div class="metric-big">0.0102</div><div class="metric-caption">질문별 확률 표준편차 평균</div></div>
+            <p class="caveat" style="margin-top:24px">벤더가 수행한 한 가지 과제의 결과다. 독립적인 정확도 우월성 증거가 아니다.</p>
+          </div>
+          <div class="bench-list">
+            <div class="bench-row highlight"><div class="bench-name">jev-1.13.0</div><div class="bench-track"><div class="bench-fill" style="width:1%"></div></div><div class="bench-val">111ms</div></div>
+            <div class="bench-row"><div class="bench-name">gpt-5.4-mini · yes/no t=0</div><div class="bench-track"><div class="bench-fill" style="width:10%"></div></div><div class="bench-val">1,113ms</div></div>
+            <div class="bench-row"><div class="bench-name">claude-haiku-4-5 · yes/no t=0</div><div class="bench-track"><div class="bench-fill" style="width:13%"></div></div><div class="bench-val">1,485ms</div></div>
+            <div class="bench-row"><div class="bench-name">gpt-5.5 reasoning</div><div class="bench-track"><div class="bench-fill" style="width:80%"></div></div><div class="bench-val">11,125ms</div></div>
+            <div class="bench-row"><div class="bench-name">claude-opus-4-8 reasoning</div><div class="bench-track"><div class="bench-fill" style="width:100%"></div></div><div class="bench-val">13,886ms</div></div>
+            <div class="rule"></div>
+            <p class="small"><span class="amber mono">covered: 0.43–0.53</span> · Jev도 0.5 임계값을 넘나들었다.</p>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook">Self-consistency: nouls</a> · 2026-09-11 실행</span>
+        <span class="page-no">14</span>
+      </footer>
+      <aside class="notes"><strong>해석:</strong> TypeSafe의 확률 변동은 비교 조건 중 낮았지만 0이 아니었다. 비용 표는 Cookbook이 명시한 과거 가격 가정을 사용하므로 현재 청구 금액으로 제시하지 않는다. 이 슬라이드는 속도와 자기일관성 실험이다.</aside>
+    </section>
+
+    <section class="slide slide-parallel-compact" data-title="병렬 질문의 효율">
+      <header class="slide-head">
+        <p class="eyebrow">14 · Official cookbook</p>
+        <h2>한 요청에 질문을 묶는 이유</h2>
+      </header>
+      <div class="slide-body">
+        <div class="before-after">
+          <div class="measure-block after">
+            <p class="eyebrow">1 call · 13 questions</p>
+            <div class="metric-big accent">$0.000497</div>
+            <p class="lead">0.27초</p>
+            <p class="muted">53,777자 문서를 한 번 전송</p>
+          </div>
+          <div class="measure-block">
+            <p class="eyebrow">13 calls · 1 question each</p>
+            <div class="metric-big">$0.006090</div>
+            <p class="lead">2.71초</p>
+            <p class="muted">같은 문서를 열세 번 전송</p>
+          </div>
+        </div>
+        <div class="rule"></div>
+        <div class="metric-pair">
+          <div class="metric"><div class="metric-big">12.2×</div><div class="metric-caption">비용 절감</div></div>
+          <div class="metric"><div class="metric-big">10.0×</div><div class="metric-caption">순차 실행 대비 총 시간</div></div>
+        </div>
+        <p class="caveat" style="margin-top:22px">속도 비교는 13개 단일 호출의 지연시간을 합한 순차 실행 기준이다. 동시 실행하면 시간 차이는 줄지만 입력 토큰 비용 차이는 남는다.</p>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/cookbooks/parallel_questions">Parallel questions</a> · 모델 <span class="mono">jev-1.12</span>, 조건당 5회</span>
+        <span class="page-no">15</span>
+      </footer>
+      <aside class="notes"><strong>문서 내부 숫자 차이:</strong> Primitives 페이지는 11.5배와 9.6배라고 요약하지만 Cookbook 본문 계산 결과는 12.2배와 10.0배다. 여기서는 실험 원문 표의 값을 사용했다.</aside>
+    </section>
+
+    <section class="slide" data-title="검색 재순위 사례">
+      <header class="slide-head">
+        <p class="eyebrow">15 · Official cookbook</p>
+        <h2>검색 결과의 의미 기반 재순위</h2>
+      </header>
+      <div class="slide-body">
+        <div class="before-after">
+          <div class="measure-block">
+            <h3>BM25</h3>
+            <div class="measure-row"><div class="mono">Top 1</div><div class="measure-track"><div class="measure-fill" style="width:5%"></div></div><div class="measure-val">5%</div></div>
+            <div class="measure-row"><div class="mono">Top 5</div><div class="measure-track"><div class="measure-fill" style="width:15%"></div></div><div class="measure-val">15%</div></div>
+            <div class="measure-row"><div class="mono">Top 10</div><div class="measure-track"><div class="measure-fill" style="width:38%"></div></div><div class="measure-val">38%</div></div>
+          </div>
+          <div class="measure-block after">
+            <h3>BM25 + Jev re-rank</h3>
+            <div class="measure-row"><div class="mono">Top 1</div><div class="measure-track"><div class="measure-fill" style="width:18%"></div></div><div class="measure-val">18%</div></div>
+            <div class="measure-row"><div class="mono">Top 5</div><div class="measure-track"><div class="measure-fill" style="width:35%"></div></div><div class="measure-val">35%</div></div>
+            <div class="measure-row"><div class="mono">Top 10</div><div class="measure-track"><div class="measure-fill" style="width:62%"></div></div><div class="measure-val">62%</div></div>
+          </div>
+        </div>
+        <div class="rule"></div>
+        <p class="lead">3,565개 법률 구절 · 40개 쿼리 · 상위 30개 재순위 · 1,200회 호출 · <span class="accent">$0.0645</span></p>
+        <p class="caveat">재순위는 1차 검색이 고르지 않은 구절을 새로 추가할 수 없다.</p>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/cookbooks/rerank_typesafe">Re-ranking</a> · CLERC 데이터셋 공식 walkthrough</span>
+        <span class="page-no">16</span>
+      </footer>
+      <aside class="notes"><strong>의미:</strong> Jev는 전체 검색을 대체하지 않는다. BM25 같은 빠른 검색이 후보를 좁히고, Noul 확률이 후보의 의미 관련성을 평가해 순서를 바꾸는 역할을 한다.</aside>
+    </section>
+
+    <section class="slide" data-title="Jev 1.13 실패 모드">
+      <header class="slide-head">
+        <p class="eyebrow">16 · Known limitations</p>
+        <h2>Jev 1.13의 공식 실패 모드</h2>
+      </header>
+      <div class="slide-body">
+        <div class="failure-groups">
+          <div class="failure-group">
+            <h3>코드가 더 잘하는 일</h3>
+            <ul><li>수학과 숫자 정밀도</li><li>개수 세기</li><li>날짜·시간 비교</li><li>Score로 정확한 수량 보간</li></ul>
+          </div>
+          <div class="failure-group">
+            <h3>질문과 State의 위험</h3>
+            <ul><li>문자 그대로의 해석</li><li>여러 단계의 간접성</li><li>무관한 정보가 많은 State</li><li>적대적 콘텐츠</li><li>서로 모순된 instructions와 criteria</li></ul>
+          </div>
+          <div class="failure-group">
+            <h3>능력의 경계</h3>
+            <ul><li>상식적 구조 불변성 미보장</li><li>질문과 부정 질문의 합이 1이 아닐 수 있음</li><li>텍스트·코드·설명 생성 미지원</li></ul>
+          </div>
+        </div>
+        <div class="rule"></div>
+        <p class="statement">산술은 코드에, 생성은 LLM에, Jev에는 <span class="accent">의미 판단만</span> 맡긴다.</p>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/model-jaggedness/jev-1.13">Jev 1.13 jaggedness</a> · 2026-09-17 검토</span>
+        <span class="page-no">17</span>
+      </footer>
+      <aside class="notes"><strong>발표에서 강조:</strong> Jev는 결정론적이지 않으며 구조적 항등식도 자동 보장하지 않는다. 같은 결정을 한 가지 질문 형태로 평가하고, 합계·상호배타성·보수 관계는 코드에서 강제한다.</aside>
+    </section>
+
+    <section class="slide" data-title="운영 스펙과 한국어 리스크">
+      <header class="slide-head">
+        <p class="eyebrow">17 · Production facts</p>
+        <h2>운영 스펙과 한국어 도입 위험</h2>
+      </header>
+      <div class="slide-body">
+        <div class="spec-grid">
+          <dl class="spec-list">
+            <div class="spec-row"><dt>모델</dt><dd>jev-1.13.0</dd></div>
+            <div class="spec-row"><dt>가격</dt><dd>$42 / Btok · $0.042 / Mtok</dd></div>
+            <div class="spec-row"><dt>과금</dt><dd>입력 토큰만 · 출력 토큰 무료</dd></div>
+            <div class="spec-row"><dt>레이트 리밋</dt><dd>250k tokens/s · 1,200 req/min</dd></div>
+            <div class="spec-row"><dt>컨텍스트</dt><dd>64k/request · state + 최장 질문 32k</dd></div>
+            <div class="spec-row"><dt>입력</dt><dd>Text only</dd></div>
+            <div class="spec-row"><dt>데이터</dt><dd>요청·응답으로 학습하지 않음</dd></div>
+          </dl>
+          <div class="risk-callout">
+            <p class="eyebrow amber">한국 프로젝트 핵심 리스크</p>
+            <h3>영어가 주 학습 언어이며 정확도가 가장 높다</h3>
+            <p>CJK를 포함한 다른 언어도 처리하지만 동등한 정확도를 보장하지 않는다. 한국어 실데이터 PoC와 confidence 기반 라우팅이 필요하다.</p>
+            <div class="rule"></div>
+            <p class="small"><strong class="amber">운영 경고:</strong> 공개 레이트 리밋은 예고 없이 바뀔 수 있다. 임계값을 튜닝했다면 이동하는 alias보다 버전 ID를 고정하고 응답 모델을 로그로 남긴다.</p>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/models">Models</a> · <a href="https://docs.typesafe.ai/legal">Legal</a></span>
+        <span class="page-no">18</span>
+      </footer>
+      <aside class="notes"><strong>보안과 계약:</strong> 엔터프라이즈 고객에게 ZDR을 제공하며 공식 Legal 페이지에 DPA, Master Customer Agreement, Privacy Policy가 연결되어 있다. 공개 문서에 없는 인증, 리전, SLA는 계약 전에 별도 확인한다.</aside>
+    </section>
+
+    <section class="slide" data-title="도입 적합성">
+      <header class="slide-head">
+        <p class="eyebrow">18 · Adoption fit</p>
+        <h2>Jev가 적합한 프로젝트</h2>
+      </header>
+      <div class="slide-body">
+        <div class="fit-split">
+          <div class="fit-col">
+            <h3 class="green">적합</h3>
+            <ul>
+              <li>반복량이 많은 분류와 라우팅</li>
+              <li>여러 독립 기준의 관련성·위험 판정</li>
+              <li>확률로 정렬하는 재순위</li>
+              <li>불확실 사례만 LLM이나 사람에게 보내는 게이트</li>
+              <li>코드가 최종 정책과 행동을 소유하는 워크플로</li>
+            </ul>
+          </div>
+          <div class="fit-col avoid">
+            <h3 class="coral">부적합</h3>
+            <ul>
+              <li>자유로운 답변과 문서·코드 생성</li>
+              <li>정확한 산술, 계산, 개수 세기</li>
+              <li>복합 다단계 추론을 한 번에 요구하는 과제</li>
+              <li>이미지·음성·영상의 직접 이해</li>
+              <li>언어별 자체 검증 없이 수행하는 고위험 자동화</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">출처: <a href="https://docs.typesafe.ai/concepts/use-case-map">Use case map</a> · <a href="https://docs.typesafe.ai/model-jaggedness/jev-1.13">Jev 1.13 jaggedness</a></span>
+        <span class="page-no">19</span>
+      </footer>
+      <aside class="notes"><strong>의사결정:</strong> Jev 도입의 기준은 모델 유행이 아니라 과제 형태다. 답의 공간이 닫혀 있고, 동일 판단이 반복되며, 불확실성을 다음 처리기로 라우팅할 수 있을 때 가치가 커진다.</aside>
+    </section>
+
+    <section class="slide" data-title="권장 PoC와 결론">
+      <header class="slide-head">
+        <p class="eyebrow">19 · Recommendation</p>
+        <h2>Shadow PoC 기반 도입 검증</h2>
+      </header>
+      <div class="slide-body">
+        <div class="steps">
+          <div class="step"><strong>01</strong><h3>과제 선택</h3><p>저위험·고빈도의 좁은 판단 하나</p></div>
+          <div class="step"><strong>02</strong><h3>Gold set</h3><p>한국어 실데이터와 경계 사례 라벨</p></div>
+          <div class="step"><strong>03</strong><h3>Shadow</h3><p>기존 경로를 바꾸지 않고 결과 기록</p></div>
+          <div class="step"><strong>04</strong><h3>Threshold</h3><p>업무 위험별 자동·확인·검토 구간</p></div>
+          <div class="step"><strong>05</strong><h3>Rollout</h3><p>버전 고정, 재평가, 단계적 확대</p></div>
+        </div>
+        <div class="rule" style="margin-top:34px"></div>
+        <p class="statement">Jev는 판단하고, 코드는 계산·검증·행동하며,<br>일반 LLM은 생성·복합 추론하고, 사람은 고위험 사례를 책임진다.</p>
+      </div>
+      <footer class="slide-foot">
+        <span class="source">결론은 TypeSafe의 공식 아키텍처 지침과 모델 제한을 종합한 도입 제안</span>
+        <span class="page-no">20</span>
+      </footer>
+      <aside class="notes"><strong>마무리:</strong> 성공 기준에는 정확도만 넣지 않는다. 지연시간, 비용, 자동 처리율, 사람 검토율, 임계값별 오류, 버전 변화까지 함께 측정한다. 공식 Cookbook 수치는 가설을 세우는 근거이고 최종 결정은 자체 PoC 결과로 내린다.</aside>
+    </section>
+
+  </main>
+
+  <div class="progress" id="progress"></div>
+  <nav class="controls" aria-label="슬라이드 제어">
+    <button id="prev" aria-label="이전 슬라이드">‹</button>
+    <span class="counter" id="counter">1 / 20</span>
+    <button id="next" aria-label="다음 슬라이드">›</button>
+    <button id="notesBtn" aria-label="발표자 노트">N</button>
+    <button id="fullBtn" aria-label="전체 화면">F</button>
+    <button id="helpBtn" aria-label="도움말">?</button>
+  </nav>
+  <aside class="notes-panel" id="notesPanel" aria-live="polite"></aside>
+  <div class="help" id="help" role="dialog" aria-modal="true" aria-label="키보드 단축키">
+    <div class="help-card">
+      <h3>키보드 단축키</h3>
+      <div class="key-grid">
+        <kbd>← / →</kbd><span>이전 / 다음 슬라이드</span>
+        <kbd>Space</kbd><span>다음 슬라이드</span>
+        <kbd>Home / End</kbd><span>첫 / 마지막 슬라이드</span>
+        <kbd>N</kbd><span>발표자 노트 표시</span>
+        <kbd>F</kbd><span>전체 화면</span>
+        <kbd>O</kbd><span>슬라이드 전체 보기</span>
+        <kbd>P</kbd><span>인쇄 또는 PDF 저장</span>
+        <kbd>?</kbd><span>이 도움말 열기 / 닫기</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const slides = [...document.querySelectorAll('.slide')];
+      const counter = document.getElementById('counter');
+      const progress = document.getElementById('progress');
+      const notesPanel = document.getElementById('notesPanel');
+      const help = document.getElementById('help');
+      let index = 0;
+
+      const fromHash = () => {
+        const n = Number(location.hash.replace('#', ''));
+        return Number.isFinite(n) && n >= 1 && n <= slides.length ? n - 1 : 0;
+      };
+
+      function show(next, updateHash = true) {
+        index = Math.max(0, Math.min(slides.length - 1, next));
+        slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+        counter.textContent = `${index + 1} / ${slides.length}`;
+        progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+        document.title = `${slides[index].dataset.title} | Jev 기술 발표`;
+        if (updateHash) history.replaceState(null, '', `#${index + 1}`);
+        updateNotes();
+      }
+
+      function updateNotes() {
+        const note = slides[index].querySelector('.notes');
+        notesPanel.innerHTML = note ? note.innerHTML : '발표자 노트가 없습니다.';
+      }
+
+      function toggleNotes() { notesPanel.classList.toggle('open'); updateNotes(); }
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+        else document.exitFullscreen?.();
+      }
+      function toggleOverview(forceOff = false) {
+        if (forceOff) document.body.classList.remove('overview');
+        else document.body.classList.toggle('overview');
+      }
+
+      document.getElementById('prev').addEventListener('click', () => show(index - 1));
+      document.getElementById('next').addEventListener('click', () => show(index + 1));
+      document.getElementById('notesBtn').addEventListener('click', toggleNotes);
+      document.getElementById('fullBtn').addEventListener('click', toggleFullscreen);
+      document.getElementById('helpBtn').addEventListener('click', () => help.classList.toggle('open'));
+      help.addEventListener('click', e => { if (e.target === help) help.classList.remove('open'); });
+
+      slides.forEach((slide, i) => slide.addEventListener('click', () => {
+        if (document.body.classList.contains('overview')) {
+          toggleOverview(true);
+          show(i);
+        }
+      }));
+
+      window.addEventListener('hashchange', () => show(fromHash(), false));
+      window.addEventListener('keydown', e => {
+        if (help.classList.contains('open') && e.key === 'Escape') { help.classList.remove('open'); return; }
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); show(index + 1); }
+        else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(index - 1); }
+        else if (e.key === 'Home') show(0);
+        else if (e.key === 'End') show(slides.length - 1);
+        else if (e.key.toLowerCase() === 'n') toggleNotes();
+        else if (e.key.toLowerCase() === 'f') toggleFullscreen();
+        else if (e.key.toLowerCase() === 'o') toggleOverview();
+        else if (e.key.toLowerCase() === 'p') window.print();
+        else if (e.key === '?') help.classList.toggle('open');
+        else if (e.key === 'Escape') { notesPanel.classList.remove('open'); help.classList.remove('open'); }
+      });
+
+      show(fromHash(), false);
+    })();
+  </script>
+</body>
+</html>
